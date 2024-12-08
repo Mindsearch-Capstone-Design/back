@@ -3,7 +3,8 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
-from fastapi.middleware.cors import CORSMiddleware
+# from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.cors import CORSMiddleware
 import os
 import csv
 from pydantic import BaseModel
@@ -22,11 +23,14 @@ youtube = build('youtube', 'v3', developerKey=API_KEY)
 # FastAPI 앱 초기화
 app = FastAPI()
 
+
 class CrawlRequest(BaseModel):
     channel_name: str
     start_date: str
     end_date: str
-    file_name: str = 'comments.csv'
+    platform: str
+
+
 # CORS 설정
 origins = ["*"]  # 모든 도메인 허용 (배포 시 제한 필요)
 app.add_middleware(
@@ -151,20 +155,19 @@ def get_comments(video_id: str, excluded_keywords=EXCLUDED_KEYWORDS):
 
 # CSV 저장
 def save_comments_to_csv(comments, file_name='comments.csv'):
-    base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "dataset"))
+    base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "dataset"))
     os.makedirs(base_path, exist_ok=True)
     file_path = os.path.join(base_path, file_name)
 
-    headers = ['video_url', 'video_title', 'comment', 'published_at']
+    headers = ['published_at','comment','video_url']
     with open(file_path, mode='w', encoding='utf-8', newline='') as file:
         writer = csv.DictWriter(file, fieldnames=headers)
         writer.writeheader()
         for comment in comments:
             writer.writerow({
-                'video_url': comment.get('video_url', 'N/A'),
-                'video_title': comment.get('video_title', 'N/A'),
-                'comment': comment.get('comment', ''),
                 'published_at': comment.get('published_at', ''),
+                'comment': comment.get('comment', ''),
+                'video_url': comment.get('video_url', 'N/A')
             })
     print(f"CSV 파일이 다음 경로에 저장되었습니다: {file_path}")
 
@@ -175,7 +178,7 @@ async def api_crawl_comments(request: CrawlRequest):
     channel_name = request.channel_name
     start_date = request.start_date
     end_date = request.end_date
-    file_name = request.file_name
+    platform = request.platform
 
     # 기존 로직 유지
     channel_id = get_channel_id(channel_name)
@@ -200,8 +203,8 @@ async def api_crawl_comments(request: CrawlRequest):
             comment['video_title'] = video['title']
         all_comments.extend(comments)
 
-    save_comments_to_csv(all_comments, file_name)
-    return {"message": f"Comments saved to dataset/{file_name}", "comments_count": len(all_comments)}
+    save_comments_to_csv(all_comments)
+    return {"message": f"Comments saved to dataset/comment.csv", "comments_count": len(all_comments)}
 # FastAPI 앱에 라우터 추가
 app.include_router(router)
 
