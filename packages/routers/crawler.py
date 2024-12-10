@@ -14,6 +14,8 @@ from starlette.middleware.cors import CORSMiddleware
 import time
 import os
 import pandas as pd
+import re
+from difflib import SequenceMatcher
 
 # .env 파일에서 환경변수 로드
 load_dotenv()
@@ -54,6 +56,21 @@ def create_webdriver():
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
     return webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+
+# CSV 저장
+def save_to_csv(comments_data, filename="comments.csv"):
+    base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "dataset"))
+    os.makedirs(base_path, exist_ok=True)
+    file_path = os.path.join(base_path, filename)
+    df = pd.DataFrame(comments_data, columns=["date", "comment", "link"])
+    df.to_csv(file_path, index=False, encoding="utf-8-sig")
+    print(f"크롤링 결과가 {filename} 파일에 저장되었습니다.")
+
+# 날짜 변환
+def convert_to_utc(kst_date: str) -> str:
+    kst_datetime = datetime.strptime(kst_date, "%Y-%m-%d")
+    utc_datetime = kst_datetime - timedelta(hours=9)
+    return utc_datetime.strftime("%Y-%m-%dT%H:%M:%SZ")
 
 # Instagram 로그인
 def instagram_login(driver, username, password):
@@ -224,7 +241,6 @@ def scrape_instagram_comments(account, start_date, end_date):
     save_to_csv(comments_data)
     return comments_data
 
-
 # YouTube 댓글 크롤링
 def scrape_youtube_comments(account, start_date, end_date):
     # 채널 ID 가져오기
@@ -266,6 +282,18 @@ def scrape_youtube_comments(account, start_date, end_date):
 
     # 댓글 크롤링
     comments_data = []
+    similar_comments = []  # 유사 댓글 저장 리스트
+    seen_comments = []  # 중복 및 유사 댓글 확인을 위한 리스트
+    exclusion_patterns = [  # 제외할 패턴 정의
+        r":",
+        r"정답",
+        r"이벤트"
+    ]
+
+    def is_similar(new_comment, existing_comments, threshold=0.5):
+        # 기존 댓글들과 유사도 비교
+        return any(SequenceMatcher(None, new_comment, existing).ratio() > threshold for existing in existing_comments)
+
     for video in video_data:
         video_id = video['id']['videoId']
         video_comments = []
@@ -291,30 +319,31 @@ def scrape_youtube_comments(account, start_date, end_date):
         for item in video_comments:
             comment = item['snippet']['topLevelComment']['snippet']['textDisplay']
             published_at = item['snippet']['topLevelComment']['snippet']['publishedAt']
+
+            # 1. 특정 패턴 확인 및 제외
+            if any(re.search(pattern, comment) for pattern in exclusion_patterns):
+                continue
+
+            # 2. 유사도 확인
+            if is_similar(comment, seen_comments):
+                similar_comments.append({
+                    "date": published_at.split("T")[0],
+                    "comment": comment,
+                    "link": f"https://www.youtube.com/watch?v={video_id}"
+                })
+                continue
+
+            # 3. 댓글 저장
             comments_data.append({
                 "date": published_at.split("T")[0],
                 "comment": comment,
                 "link": f"https://www.youtube.com/watch?v={video_id}"
             })
+            seen_comments.append(comment)  # 중복 및 유사도 비교를 위해 저장
 
-    save_to_csv(comments_data)
+    save_to_csv(comments_data, filename="comments.csv")
+    save_to_csv(similar_comments, filename="similar.csv")
     return comments_data
-
-
-# CSV 저장
-def save_to_csv(comments_data, filename = "comments.csv"):
-    base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "dataset"))
-    os.makedirs(base_path, exist_ok=True)
-    file_path = os.path.join(base_path, filename)
-    df = pd.DataFrame(comments_data, columns=["date", "comment", "link"])
-    df.to_csv(file_path, index=False, encoding="utf-8-sig")
-    print(f"크롤링 결과가 {filename} 파일에 저장되었습니다.")
-
-# 날짜 변환
-def convert_to_utc(kst_date: str) -> str:
-    kst_datetime = datetime.strptime(kst_date, "%Y-%m-%d")
-    utc_datetime = kst_datetime - timedelta(hours=9)
-    return utc_datetime.strftime("%Y-%m-%dT%H:%M:%SZ")
 
 # API 엔드포인트
 @router.post("/crawl")
