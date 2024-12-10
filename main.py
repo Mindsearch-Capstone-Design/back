@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
-from packages.routers import youtube_crawler
+from packages.routers import crawler
 from fastapi.responses import FileResponse  # FileResponse를 임포트
 import os
 import torch
@@ -22,7 +22,7 @@ app.add_middleware(
 def read_root():
     return {"Hello": "World"}
 
-app.include_router(youtube_crawler.router)
+app.include_router(crawler.router)
 
 @app.get("/download-csv")
 def download_csv():
