@@ -78,16 +78,17 @@ def instagram_login(driver, username, password):
     WebDriverWait(driver, 15).until(EC.presence_of_element_located((By.NAME, "username"))).send_keys(username)
     driver.find_element(By.NAME, "password").send_keys(password)
     driver.find_element(By.XPATH, "//button[@type='submit']").click()
-    time.sleep(10)
+    time.sleep(5)
 
 # Instagram 댓글 크롤링
 def scrape_instagram_comments(account, start_date, end_date):
+    start_time = time.time()
     driver = create_webdriver()
     instagram_login(driver, INSTAGRAM_USERNAME, INSTAGRAM_PASSWORD)
 
     # 검색 버튼 클릭
     try:
-        search_button = WebDriverWait(driver, 10).until(
+        search_button = WebDriverWait(driver, 5).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, 'svg[aria-label="검색"]'))
         )
         search_button.click()
@@ -100,7 +101,7 @@ def scrape_instagram_comments(account, start_date, end_date):
 
     # 검색 입력 필드에 채널 이름 입력
     try:
-        search_input = WebDriverWait(driver, 10).until(
+        search_input = WebDriverWait(driver, 5).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, 'input[aria-label="입력 검색"]'))
         )
         search_input.send_keys(account)
@@ -114,7 +115,7 @@ def scrape_instagram_comments(account, start_date, end_date):
     # 검색 결과에서 채널 선택
     try:
         # 검색 결과에서 첫 번째 링크 선택
-        top_result = WebDriverWait(driver, 10).until(
+        top_result = WebDriverWait(driver, 5).until(
             EC.element_to_be_clickable((By.CSS_SELECTOR, "div.x6s0dn4 div.x9f619 a"))
         )
         top_result.click()
@@ -125,18 +126,18 @@ def scrape_instagram_comments(account, start_date, end_date):
         driver.quit()
         return
 
-    first_post = WebDriverWait(driver, 10).until(
+    first_post = WebDriverWait(driver, 5).until(
         EC.presence_of_element_located((By.CSS_SELECTOR, "a[href*='/p/']"))
     )
     first_post.click()
     time.sleep(3)
     comments_data = []
 
-    # 기존 댓글 크롤링 로직
+    # 댓글 크롤링 로직
     while True:
         try:
             # 게시물 날짜 가져오기
-            date_element = WebDriverWait(driver, 10).until(
+            date_element = WebDriverWait(driver, 5).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, "time.x1p4m5qa"))
             )
             post_date_str = date_element.get_attribute("datetime")
@@ -172,7 +173,7 @@ def scrape_instagram_comments(account, start_date, end_date):
                                     (By.CSS_SELECTOR, 'button._abl- > div > span > svg[aria-label="다음"]'))
                             )
                             next_button.click()
-                            time.sleep(3)
+                            time.sleep(2)
                             continue
                         except Exception as e:
                             print("다음 버튼이 없어 크롤링 종료:", e)
@@ -196,7 +197,7 @@ def scrape_instagram_comments(account, start_date, end_date):
                         break
 
                 # 댓글 텍스트와 날짜 수집
-                comment_elements = WebDriverWait(driver, 10).until(
+                comment_elements = WebDriverWait(driver, 5).until(
                     EC.presence_of_all_elements_located((By.CSS_SELECTOR, "ul li"))
                 )
                 for comment_element in comment_elements:
@@ -227,7 +228,7 @@ def scrape_instagram_comments(account, start_date, end_date):
                 )
                 next_button.click()
                 print("다음 버튼을 클릭했습니다.")
-                time.sleep(3)
+                time.sleep(2)
             except Exception as e:
                 print("다음 버튼이 없어 크롤링 종료:", e)
                 break
@@ -239,10 +240,14 @@ def scrape_instagram_comments(account, start_date, end_date):
     driver.quit()
 
     save_to_csv(comments_data)
-    return comments_data
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    print(f"크롤링 소요 시간: {elapsed_time:.2f}초")
+    return comments_data, elapsed_time
 
 # YouTube 댓글 크롤링
 def scrape_youtube_comments(account, start_date, end_date):
+    start_time = time.time()
     # 채널 ID 가져오기
     channel_id = youtube.search().list(
         part='snippet',
@@ -343,18 +348,25 @@ def scrape_youtube_comments(account, start_date, end_date):
 
     save_to_csv(comments_data, filename="comments.csv")
     save_to_csv(similar_comments, filename="similar.csv")
-    return comments_data
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    print(f"크롤링 소요 시간: {elapsed_time:.2f}초")
+    return comments_data, elapsed_time
 
 # API 엔드포인트
 @router.post("/crawl")
 async def crawl(request: CrawlRequest):
     if request.platform.lower() == "instagram":
-        comments = scrape_instagram_comments(request.account, request.start_date, request.end_date)
+        comments, elapsed_time = scrape_instagram_comments(request.account, request.start_date, request.end_date)
     elif request.platform.lower() == "youtube":
-        comments = scrape_youtube_comments(request.account, request.start_date, request.end_date)
+        comments, elapsed_time = scrape_youtube_comments(request.account, request.start_date, request.end_date)
     else:
         raise HTTPException(status_code=400, detail="Invalid platform. Choose either 'instagram' or 'youtube'.")
-    return {"message": f"Comments saved to CSV", "comments_count": len(comments)}
+    return {
+        "message": f"Comments saved to CSV", 
+        "comments_count": len(comments),
+        "elapsed_time":f"{elapsed_time:.2f}seconds"
+        }
 
 app.include_router(router)
 # 앱 실행 (개발 환경)
