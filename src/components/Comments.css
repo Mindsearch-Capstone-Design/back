@@ -1,0 +1,197 @@
+@font-face {
+  font-family: "hana";
+  src: url("../fonts/hana.ttf") format("truetype");
+}
+
+.comments-container {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  background-color: #ffffff;
+  border-radius: 25px;
+  font-family: "hana", sans-serif;
+  box-sizing: border-box;
+}
+
+.comment-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.5em;
+  margin-bottom: 20px;
+  text-align: left;
+  margin-left: 20px;
+  font-family: "hana";
+  font-weight: bold;
+}
+
+.comments-checkbox-panel {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  background-color: rgb(255, 255, 255);
+  border-radius: 25px;
+}
+
+.comments-checkbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* box-shadow: 0.5px 0.5px 4px 1px rgba(0, 0, 0, 0.2); */
+  transition: background-color 0.3s ease;
+}
+
+.comments-checkbox-circle {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+}
+
+.comments-checkbox-circle.positive {
+  background-color: #316dec;
+}
+
+.comments-checkbox-circle.neutral {
+  background-color: #0f9b0f;
+}
+
+.comments-checkbox-circle.negative {
+  background-color: #e93434;
+}
+
+.comments-checkbox.selected {
+  border: 2px solid #000000;
+}
+
+.comment-title {
+  font-size: 1.5em;
+  margin-bottom: 40px;
+  text-align: left;
+  margin-left: 20px;
+}
+
+.comment-header {
+  background-color: rgb(255, 255, 255);
+  display: grid;
+  grid-template-columns: 1fr 4fr 1fr 0.6fr;
+  text-align: left;
+  padding: 10px 0;
+  border-bottom: 3px solid black;
+  font-weight: bold;
+}
+
+.comment-row {
+  display: grid;
+  grid-template-columns: 1fr 4fr 1fr 0.6fr;
+  text-align: left;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.comment-link {
+  text-decoration: none;
+  color: black;
+}
+
+.comment-link:hover {
+  text-decoration: underline;
+}
+
+.comment-row:last-child {
+  border-bottom: none;
+}
+
+.col {
+  padding: 0 10px;
+}
+
+.sentiment-container {
+  display: inline-block;
+  padding: 3px 5px;
+  border-radius: 5px;
+}
+
+.sentiment-긍정 {
+  background-color: rgb(240, 246, 255);
+}
+
+.sentiment-중립 {
+  background-color: rgb(237, 255, 233);
+}
+
+.sentiment-부정 {
+  background-color: rgb(255, 231, 243);
+}
+
+.feedback-button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 1.2em;
+  padding: 5px;
+}
+
+.feedback-col {
+  position: relative;
+}
+
+.feedback-dropdown {
+  position: absolute;
+  top: 0;
+  left: 50px;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.feedback-item {
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
+.feedback-item:hover {
+  background-color: #f0f0f0;
+}
+
+.comment-content {
+  margin-bottom: 20px;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.pagination-btn {
+  padding: 5px 10px;
+  font-size: 1em;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #fff;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.pagination-btn:disabled {
+  background-color: #f0f0f0;
+  cursor: not-allowed;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background-color: #dfe6e9;
+}
+
+.pagination-info {
+  margin: 0 20px;
+  font-size: 1em;
+}

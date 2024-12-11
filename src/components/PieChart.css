@@ -1,0 +1,40 @@
+@font-face {
+  font-family: "hana";
+  src: url("./components/fonts/hana.ttf") format("truetype");
+}
+
+.circlechart-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 90%;
+  height: 400px;
+  border-radius: 20px;
+  margin: 0 auto;
+  margin-top: 60px;
+  margin-bottom: 60px;
+  padding: 20px;
+  background-color: rgb(255, 255, 255);
+  box-sizing: border-box;
+}
+
+/* 제목을 좌측 상단에 배치 */
+.piechart-title {
+  position: absolute;
+  top: 0px;
+  left: 20px;
+  font-size: 1.5em;
+  font-weight: bold;
+  margin: 0;
+  font-family: "hana", sans-serif;
+}
+
+.no-data {
+  text-align: center;
+}
+
+.no-data-text {
+  font-family: "Nanum", Arial, sans-serif;
+  font-size: 1.2em;
+  color: #333;
+}

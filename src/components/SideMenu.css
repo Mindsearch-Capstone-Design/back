@@ -1,0 +1,52 @@
+@font-face {
+  font-family: "Nanum";
+  src: url("../fonts/Nanum.ttf") format("truetype");
+}
+
+.side-menu {
+  position: fixed;
+  top: 92px;
+  left: 0;
+  width: 100px;
+  height: calc(100vh - 20px);
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 15px;
+  /* box-shadow: 1px 1px 8px 1px rgba(0, 0, 0, 0.1); */
+  box-sizing: border-box;
+  padding: 0px; /* 전체 padding 설정 */
+  z-index: 800;
+}
+
+.menu-button {
+  width: 100%;
+  height: 80px;
+  padding: 10px;
+  border: 0;
+  margin-bottom: 120px;
+  background-color: rgb(255, 255, 255);
+  color: black;
+  font-family: "Nanum", sans-serif;
+  font-size: 1em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.menu-button:hover {
+  background-color: rgb(241, 245, 253); /* 마우스를 올렸을 때 배경색 변경 */
+}
+
+.menu-button.active {
+  background-color: rgb(245, 248, 254); /* 활성화된 버튼의 배경색 */
+  color: rgb(39, 148, 250);
+}
+
+.menu-icon {
+  width: 30px; /* 이미지 크기 설정 */
+  height: auto;
+  object-fit: contain;
+}

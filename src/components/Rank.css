@@ -1,0 +1,27 @@
+.rank-container {
+  width: 300px;
+  padding: 10px;
+  background-color: #ffffff;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+.rank-list {
+  list-style-type: decimal;
+  padding-left: 20px;
+  font-family: "Nanum", sans-serif;
+  color: #333;
+}
+
+.rank-word {
+  border-radius: 25px;
+  padding: 17px;
+  margin-left: -15px;
+  margin-bottom: 25px;
+  list-style: none;
+}
+
+.rank-title {
+  margin-right: 160px;
+  margin-bottom: 10px;
+}
